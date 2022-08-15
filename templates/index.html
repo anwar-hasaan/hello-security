@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="https://www.pointcare.com/wp-content/uploads/2018/12/lock-icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <title>Hello Security</title>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="brand"><a href="/"><i class="fa fa-lock" aria-hidden="true">&nbsp; Hello Security</i></a></div>
+            <ul>
+                <li><a href="/">Home</a></li>
+                {% if not user.is_authenticated %}
+                <li><a href="javascript:;" onclick="displayModal('login-modal')">Login</a></li>
+                <li><a href="javascript:;" onclick="displayModal('signup-modal')">Signup</a></li>
+                {% endif %}
+                {% if user.is_authenticated %}
+                <li><a href="javascript:;" onclick="displayModal('add-account-modal')">Add New</a></li>
+                <li><a href="javascript:;" onclick="document.getElementById('logout-btn').click()">Logout</a></li>
+                <form action="." method="post" role="form">
+                    {% csrf_token %}
+                    <input type="submit" hidden="true" name="logout" id="logout-btn">
+                </form>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    {% if messages %}
+      <div class="messages" style="text-align: center; margin-top: 20px;">
+          {% for message in messages %}
+            <p style="font-size: 18px;">
+                {% if message.tags == "error" %}
+                  <i class="fa fa-exclamation" aria-hidden="true"></i>
+                  {% else %}
+                  <i class="fa fa-check" aria-hidden="true"></i>
+                {% endif %}
+                &nbsp;{{message}}
+            </p>
+          {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- verification code  -->
+    {% if code %}
+      <div style="text-align: center; display: flex; justify-content: center; margin-top: 20px;">
+        <form action="." role="form" method="post">
+            {% csrf_token %}
+            <h1>User verification</h1>
+            <p>Plaese check your mail and get the verification code</p>
+            <input type="number" name="inp_code" placeholder="Enter 6 digit code here..." value="" required>
+            <input type="text" hidden="true" value="{{code}}" name="initial_code">
+            <input type="email" hidden="true" value="{{email}}" name="email">
+            <input type="submit" class="submit-btn" value="Confirm" name="code-confirm">
+        </form>
+      </div>
+    {% endif %}
+
+    <!--  delete confirm  -->
+    {% if delete_confirm %}
+      <div style="text-align: center; display: flex; justify-content: center; margin-top: 40px;">
+        <form action="." role="form" method="post">
+            {% csrf_token %}
+            <h3>Are You Sure want to delete? <br>
+            <span>{{title}}</span></h3>
+            <input type="text" hidden="true" value="{{delete_confirm}}" name="delete_id">
+            <button onclick="javascript:window.history.back()" class="submit-btn" id="no-btn" style="width: 82px; font-size: 15px; height: 36px; border-radius: 20px; margin-top: 20px;">No</button>
+            <br><input type="submit" class="submit-btn" value="Yes" name="delete-confirm">
+        </form>
+      </div>
+    {% endif %}
+
+    <!-- update account password form -->
+    {% if update_obj %}
+    <div style="text-align: center; display: flex; justify-content: center; margin-top: 20px;">
+        <form action="." role="form" method="post">
+            {% csrf_token %}
+            <h1>Update Account</h2>
+            <input hidden="true" type="text" name="id" value="{{update_obj.id}}">
+            <br><label for="url">Title of site</label><br>
+            <input type="text" name="url" value="{{update_obj.title}}" placeholder="url of the website" required>
+            
+            <br><label for="username">Username or Email</label><br>
+            <input type="text" name="username" value="{{update_obj.username}}" placeholder="email or username" required>
+            
+            <br><label for="password">Password</label><br>
+            <input type="text" name="password" value="{{update_obj.password}}" placeholder="password" required>
+            <input type="submit" class="submit-btn" value="Update" name="update-password">
+        </form>
+    </div>
+    {% endif %}
+    
+    <!-- Modal -->
+    <div class="modals-wrapper">
+        <span class="close-modal" title="Close" id="close-modal"><i class="fa fa-times" aria-hidden="true"></i></span>
+        
+        <div class="login-modal" id="login-modal">
+            <form action="." role="form" method="post">
+                {% csrf_token %}
+                <h1>Login</h1>
+                <input type="text" name="username" placeholder="username" required>
+                <input type="password" name="password" placeholder="password" required>
+                <input type="submit" class="submit-btn" value="Login" name="login-form">
+            </form>
+        </div>
+
+        <div class="signup-modal" id="signup-modal">
+            <form action="." role="form" method="post">
+                {% csrf_token %}
+                <h1>Signup</h2>
+                <input type="text" name="username" placeholder="username" required>
+                <input type="email" name="email" placeholder="email" required>
+                <input type="password" name="password" placeholder="password" required>
+                <input type="password" name="password2" placeholder="re-type password" required>
+                <br><label for="" style="font-size: 18px; ">password must be contain atleast 8 character</label><br>
+                <input type="submit" class="submit-btn" value="Signup" name="signup-form">
+            </form>
+        </div>
+
+        <!-- Add Password -->
+        <div class="add-account-modal" id="add-account-modal">
+            <form action="." role="form" method="post">
+                {% csrf_token %}
+                <h1>Add New Account</h2>
+                <input type="text" name="url" placeholder="URL Example: https://www.example.com" required>
+                <input type="text" name="username" placeholder="email or username" required>
+                <input type="password" name="password" placeholder="password" required>
+                <input type="submit" class="submit-btn" value="Save" name="add-account">
+            </form>
+        </div>
+    </div>
+
+    {% if passwords %}
+    <div class="container">
+        {% for password in passwords %}
+        <div class="card">
+            <div class="actions">Actions⤵
+                <a href="javascript:;" onclick="document.getElementById('update-btn{{password.id}}').click()" style="margin-top: 8px;" class="action-item">Update</a>
+                <a href="javascript:;" onclick="document.getElementById('delete-btn{{password.id}}').click()" class="action-item">Delete</a>
+            </div>
+            <form action="." hidden="true" method="post">
+                {% csrf_token %}
+                <input type="text" hidden="true" value="{{password.id}}" name="update-id">
+                <input type="submit" id="update-btn{{password.id}}" name="update-btn">
+            </form> 
+            <form action="." hidden="true" method="post">
+                {% csrf_token %}
+                <input type="text" hidden="true" value="{{password.id}}" name="delete-id">
+                <input type="submit" id="delete-btn{{password.id}}" name="delete-btn">
+            </form>
+            <img src="{{password.icon}}" width="50" height="50" style="border-radius: 20px;" alt="Logo">
+            <h5 class="name" style="overflow: hidden;">{{password.title}}</h5>
+
+            <input type="text" name="username" value="{{password.username}}"><i class="fas fa-copy copy" title="copy to clipboard"></i>
+            <input type="password" name="password" value="{{password.password}}"><i class="fas fa-copy copy" title="copy to clipboard"></i>
+            <p style="padding-top: 10px;">Last Update: {{password.last_update}}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <footer>
+        <p>Developed by <a target="_blank" href="https://www.facebook.com/people/Anwar-Hasan/100013294023949/">Anwar Hasan</a></p>
+        <!-- <p>Copyright &copy;  2022 <a href="/">Hello Security</a></p> -->
+    </footer>
+
+    <script>
+        //copy to clipboard
+        const copies = document.querySelectorAll(".copy");
+        copies.forEach(copy =>{
+        copy.onclick = () =>{
+            let elemntToCopy = copy.previousElementSibling;
+            elemntToCopy.type='text'; //change type to text to copy password, dont need this line if type is text
+            elemntToCopy.select();
+            document.execCommand("copy");
+            }
+        })
+    </script>
+    <script src="{% static 'index.js' %}" defer></script>
+</body>
+</html>
